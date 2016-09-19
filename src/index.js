@@ -2,11 +2,19 @@
 
 const Telegram = require('telegram-node-bot');
 const TelegramBaseController = Telegram.TelegramBaseController;
-const tg = new Telegram.Telegram('BotTokenHere');
+let TelegramBotToken = null;
+if(!TelegramBotToken){
+    if(process.argv[2]){
+        TelegramBotToken = process.argv[2];
+    } else {
+        console.log("No TelegramBot Token specified.");
+        process.exit(1);
+    }
+}
+const tg = new Telegram.Telegram(TelegramBotToken);
 
 const ip = require('ip');
 const publicIp = require('public-ip');
-
 
 
 const userData = function(user){
