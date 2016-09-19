@@ -25,7 +25,11 @@ const helpText = "" +
     "Help Menu - Commands:\n" +
     "/ip : get current local ip address\n" +
     "/wan : get current wan ip address\n" +
-    "/hack : experimental stuff";
+    "/hack : experimental stuff\n" +
+    "/remind type value message\n" +
+    "    type    = hour, min or date\n" +
+    "    value   = the time value, or Date as: 'DD.MM.YYYY hh:mm'\n" +
+    "    message = The reminder message you will get";
 
 class StartController extends TelegramBaseController {
     handle($){
@@ -86,30 +90,6 @@ class WanController extends TelegramBaseController {
     };
 }
 
-class XXX extends TelegramBaseController {
-    wanHandler($){
-        let user = $._update._message._from;
-        let debugName = "[/wan]";
-        console.log(debugName + "Request from " + userData(user));
-
-        if(user._id != 36710052){
-            $.sendMessage('You are not authorized to get this information, ' + user._firstName + " " + user._lastName);
-            return
-        }
-
-        publicIp.v4().then(ip =>{
-            $.sendMessage('WAN: ' + ip);
-        });
-    };
-
-    get routes(){
-        return {
-            '/wan': 'wanHandler'
-        }
-    };
-}
-
-
 let userList = {};
 let createHackSession = function(interval, $){
     return setInterval(function(){
@@ -133,7 +113,6 @@ function getDateTime(){
     day = (day < 10 ? "0" : "") + day;
     return hour + ":" + min + ":" + sec + " - " + day + "." + month + "." + year;
 }
-
 class HackerController extends TelegramBaseController {
     hackHandler($){
         let user = $._update._message._from;
@@ -158,12 +137,54 @@ class HackerController extends TelegramBaseController {
     };
 }
 
+
+class ReminderController extends TelegramBaseController {
+    handle($){
+        let user = $._update._message._from;
+        let debugName = "[/remind]";
+        console.log(debugName + "Request from " + userData(user));
+
+        let data = $.query;
+        let typeName = "minutes";
+        let typeCoefficient = 1;
+
+        let interval = parseInt(data.value);
+        switch(data.type.toLowerCase()){
+            case 'h':
+            case 'hour':
+                typeName = hours;
+                typeCoefficient = 60;
+            case 'm':
+            case 'min':
+            case 'minute':
+                if(!interval){
+                    $.sendMessage("Value was not a Number!");
+                    break;
+                }
+                setTimeout(function(){
+                    $.sendMessage("Hey, there was something to do: " + data.message);
+                }, (interval * 60 * 1000 * typeCoefficient));
+                $.sendMessage("You will be reminded in " + interval + " " + typeName + ".");
+                break;
+            case 'd':
+            case 'date':
+                $.sendMessage("Date is currently not supported.");
+                break;
+            default:
+                console.log("unknown");
+                $.sendMessage("Unknown type: " + data.type);
+        }
+    }
+}
+
 tg.router
     .when(['/start'], new StartController())
     .when(['/help'], new StartController())
     .when(['/ip'], new IPController())
     .when(['/wan'], new WanController())
     .when(['/hack'], new HackerController())
+    .when(['/remind :type :value :message'], new ReminderController())
+    .when(['/rm :type :value :message'], new ReminderController())
     .otherwise(new OtherwiseController())
 
 console.log("TelegramBot running...");
