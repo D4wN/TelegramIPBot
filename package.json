@@ -1,0 +1,16 @@
+{
+  "name": "telebotipwan",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ip": "^1.1.3",
+    "public-ip": "^2.0.1",
+    "telegram-node-bot": "^3.0.12"
+  }
+}
